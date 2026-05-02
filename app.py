@@ -73,7 +73,7 @@ def debug():
 @app.route("/crear")
 def crear():
     db.create_all()
-    return "✔ Base de datos lista Bookglace"
+    return "✔ Base de datos lista Bookglance"
 
 # 🔐 LOGIN
 @app.route("/", methods=["GET", "POST"])
@@ -84,10 +84,8 @@ def login():
 
         # ADMIN
         if user == "Johel" and password == "Johel123":
-            session["role"] = "Johel"
-            if user == "Maribel" and password == "Mar123":
-            session["role"] = "Maribel"
-            return redirect("/admin")
+            session["role"] = "admin"
+         return redirect("/admin")
 
         # CLIENTE
         u = Usuario.query.filter_by(nombre=user, password=password).first()
