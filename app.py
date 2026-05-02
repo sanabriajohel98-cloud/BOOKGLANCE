@@ -73,7 +73,7 @@ def debug():
 @app.route("/crear")
 def crear():
     db.create_all()
-    return "✔ Base de datos lista Bookglance"
+    return "✔ BASE DE BOOKGLANCE ACTUALIZADA"
 
 # 🔐 LOGIN
 @app.route("/", methods=["GET", "POST"])
@@ -83,7 +83,7 @@ def login():
         password = request.form["pass"]
 
         # ADMIN
-        if user == "Johel" and password == "Johel123":
+        if user == "johel" and password == "johel123":
             session["role"] = "admin"
          return redirect("/admin")
 
