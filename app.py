@@ -84,9 +84,9 @@ def login():
 
         # ADMIN
         if user == "Johel" and password == "Johel123":
-            session["role"] = "admin"
+            session["role"] = "Johel"
             if user == "Maribel" and password == "Mar123":
-            session["role"] = "admin"
+            session["role"] = "Maribel"
             return redirect("/admin")
 
         # CLIENTE
