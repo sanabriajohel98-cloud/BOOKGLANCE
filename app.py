@@ -71,11 +71,10 @@ def debug():
 
 # 🧱 CREAR DB
 # Crear DB solo una vez, manualmente
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    print("Base de datos inicializada.")
-    app.run(debug=True)
+@app.route("/crear")
+def crear():
+    db.create_all() 
+    return "✔ Base de datos lista Bookglance"
    
 
 # 🔐 LOGIN
@@ -86,7 +85,7 @@ def login():
         password = request.form["pass"]
 
         # ADMIN
-        if user == "admin" and password == "1234":
+        if user == "Johel S" and password == "johel1234":
             session["role"] = "admin"
             return redirect("/admin")
 
