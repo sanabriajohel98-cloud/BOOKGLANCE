@@ -84,7 +84,7 @@ def login():
         password = request.form["pass"]
 
         # ADMIN
-        if user == "Johel S" and password == "johel1234":
+        if user == "admin" and password == "johel1234":
             session["role"] = "admin"
             return redirect("/admin")
 
