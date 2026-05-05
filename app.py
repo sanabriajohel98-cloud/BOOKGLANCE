@@ -70,10 +70,13 @@ def debug():
         return f"❌ Error: {str(e)}"
 
 # 🧱 CREAR DB
-@app.route("/crear")
-def crear():
-    db.create_all()
-    return "✔ Base de datos lista Bookglace"
+# Crear DB solo una vez, manualmente
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+    print("Base de datos inicializada.")
+    app.run(debug=True)
+   
 
 # 🔐 LOGIN
 @app.route("/", methods=["GET", "POST"])
