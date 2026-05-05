@@ -70,7 +70,6 @@ def debug():
         return f"❌ Error: {str(e)}"
 
 # 🧱 CREAR DB
-# Crear DB solo una vez, manualmente
 @app.route("/crear")
 def crear():
     db.create_all() 
