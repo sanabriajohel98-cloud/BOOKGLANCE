@@ -73,7 +73,7 @@
         {% for p in productos %}
             <div class="col-6 mb-2">
                 <div class="card p-2 text-center">
-                    <img src="{{ url_for('static', filename='images/' + p.imagen) }}" class="img-fluid mb-1" style="max-height: 60px;">
+                    <img src="{{ producto.imagen }}" style="max-width: 100%; height: auto;" alt="{{ producto.nombre }}">
                     <small>{{p.codigo}}</small>
                     <h6>{{p.nombre}}</h6>
                     <p>Gs. {{ "{:,}".format(p.precio|int) }}</p>
