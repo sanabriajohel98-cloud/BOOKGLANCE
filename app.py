@@ -8,18 +8,18 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "bookglace_pro")
 
-# 📦 DB - PostgreSQL en producción, SQLite en local
+# 📦 BASE DE DATOS
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
 if DATABASE_URL:
-    # Render/Heroku usa postgres://, convertir a postgresql:// para SQLAlchemy
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookglace.db"
 
-app.config["UPLOAD_FOLDER"] = "static/images"
-
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -430,8 +430,6 @@ def logout():
     session.clear()
     return redirect("/")
 
-if __name__ == "__main__":
-    app.run(debug=True)
     # =========================
 # 🚀 RUN
 # =========================
