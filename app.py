@@ -125,8 +125,9 @@ def admin():
     if request.method == "POST":
         codigo = request.form.get("codigo", "")
         nombre = request.form["nombre"]
-        precio = request.form["precio"]
-        stock = request.form["stock"]
+        precio = float(request.form.get("precio", 0))
+        stock = int(request.form.get("stock", 0))
+
 
         # Manejo seguro de la imagen
         nombre_imagen = ""
@@ -147,8 +148,7 @@ def admin():
             nombre=nombre,
             precio=float(precio),
             stock=int(stock),
-            imagen=nombre_imagen
-        )
+            imagen=nombre_imagen)
 
         db.session.add(p)
         db.session.commit()
@@ -156,6 +156,40 @@ def admin():
     productos = Producto.query.all()
     return render_template("admin.html", productos=productos)
 
+# ✏️ EDITAR PRODUCTO
+@app.route("/editar/<int:id>", methods=["GET", "POST"])
+def editar(id):
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    producto = Producto.query.get(id)
+    if not producto:
+        return redirect("/admin")
+
+    if request.method == "POST":
+        producto.codigo = request.form.get("codigo", producto.codigo)
+        producto.nombre = request.form.get("nombre", producto.nombre)
+        try:
+            producto.precio = float(request.form.get("precio", producto.precio))
+            producto.stock = int(request.form.get("stock", producto.stock))
+        except ValueError:
+            return "❌ Error: precio o stock inválido"
+
+        # Imagen opcional: si no se sube nueva, se mantiene la anterior
+        if "imagen" in request.files and request.files["imagen"].filename:
+            imagen = request.files["imagen"]
+            if not app.config.get("UPLOAD_FOLDER"):
+                app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "static/images")
+            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+            ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
+            imagen.save(ruta)
+            producto.imagen = imagen.filename
+
+        db.session.commit()
+        return redirect("/admin")
+
+    return render_template("editar.html", producto=producto)
 
 # 🗑️ ELIMINAR PRODUCTO
 @app.route("/eliminar/<int:id>")
