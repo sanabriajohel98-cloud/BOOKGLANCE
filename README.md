@@ -1,4 +1,18 @@
 # 📚 Bookglance - Tienda Online
+# 📘 Guía de Migraciones - BOOKGLANCE
+
+Este archivo resume los pasos para manejar la base de datos con **Flask-Migrate**.  
+⚠️ Importante: **NO usar `db.create_all()` en cada inicio**, ya que puede resetear tablas y borrar datos.
+
+---
+
+## 🖥️ Local (SQLite)
+
+### Primera vez (crear base de datos)
+```bash
+flask db init
+flask db migrate -m "Inicial"
+flask db upgrade
 
 Tienda online con sistema de caja POS.
 

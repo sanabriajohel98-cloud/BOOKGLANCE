@@ -16,13 +16,13 @@
 <tbody>
 {% for t in tickets %}
     <tr>
-        <td>#{{t.id}}</td>
-        <td>{{t.fecha.strftime("%d/%m/%Y %H:%M")}}</td>
-        <td>Gs. {{t.total}}</td>
+        <td>#{{ t.id }}</td>
+        <td>{{ t.fecha.strftime("%d/%m/%Y %H:%M") }}</td>
+        <td>Gs. {{ "{:,}".format(t.total|int) }}</td>
         <td>
-            <a href="/ticket/{{t.id}}" class="btn btn-info btn-sm">👁️ Ver</a>
-            <a href="/editar_ticket/{{t.id}}" class="btn btn-warning btn-sm">✏️</a>
-            <a href="/eliminar_ticket/{{t.id}}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar ticket?')">🗑️</a>
+            <a href="/ticket/{{ t.id }}" class="btn btn-info btn-sm">👁️ Ver</a>
+            <a href="/editar_ticket/{{ t.id }}" class="btn btn-warning btn-sm">✏️</a>
+            <a href="/eliminar_ticket/{{ t.id }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar ticket?')">🗑️</a>
         </td>
     </tr>
 {% endfor %}

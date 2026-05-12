@@ -127,17 +127,27 @@ def admin():
         nombre = request.form["nombre"]
         precio = request.form["precio"]
         stock = request.form["stock"]
-        imagen = request.files["imagen"]
 
-        ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
-        imagen.save(ruta)
+        # Manejo seguro de la imagen
+        nombre_imagen = ""
+        if "imagen" in request.files and request.files["imagen"].filename:
+            imagen = request.files["imagen"]
+            # Definir carpeta de subida si no existe
+            if not app.config.get("UPLOAD_FOLDER"):
+                app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "static/images")
+            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
+            ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
+            imagen.save(ruta)
+            nombre_imagen = imagen.filename
+
+        # Crear producto
         p = Producto(
             codigo=codigo,
             nombre=nombre,
             precio=float(precio),
             stock=int(stock),
-            imagen=imagen.filename
+            imagen=nombre_imagen
         )
 
         db.session.add(p)
@@ -146,30 +156,6 @@ def admin():
     productos = Producto.query.all()
     return render_template("admin.html", productos=productos)
 
-# ✏️ EDITAR PRODUCTO
-@app.route("/editar/<int:id>", methods=["GET", "POST"])
-def editar(id):
-    if session.get("role") != "admin":
-        return redirect("/")
-    
-    p = Producto.query.get(id)
-    
-    if request.method == "POST":
-        p.codigo = request.form.get("codigo", "")
-        p.nombre = request.form["nombre"]
-        p.precio = float(request.form["precio"])
-        p.stock = int(request.form["stock"])
-        
-        if request.files["imagen"].filename:
-            imagen = request.files["imagen"]
-            ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
-            imagen.save(ruta)
-            p.imagen = imagen.filename
-        
-        db.session.commit()
-        return redirect("/admin")
-    
-    return render_template("editar.html", producto=p)
 
 # 🗑️ ELIMINAR PRODUCTO
 @app.route("/eliminar/<int:id>")
