@@ -11,7 +11,7 @@
     <div class="mb-2">
         <input type="text" name="cliente" class="form-control" placeholder="👤 Nombre del cliente" value="">
     </div>
-    <button type="submit" class="btn btn-success btn-lg">✔ Cobrar</button>
+    
    
 </form>
 
@@ -79,5 +79,17 @@
         {% endif %}
     </div>
 </div>
- <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
+<!-- Nombre del cliente + botón cobrar -->
+<div class="row mt-4">
+    <div class="col-md-6 d-flex align-items-start">
+        <form action="/cobrar" method="POST" class="w-100">
+            <div class="mb-2">
+                <input type="text" name="cliente" class="form-control" placeholder="👤 Nombre del cliente" value="">
+            </div>
+            <button type="submit" class="btn btn-success btn-lg">✔ Cobrar</button>
+            <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
