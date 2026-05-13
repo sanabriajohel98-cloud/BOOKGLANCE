@@ -79,12 +79,26 @@
         {% endif %}
     </div>
     </div>
-    <div class="cobrar-fixed">
+    .cobrar-fixed {
+    position: fixed;
+    bottom: 20px;   /* distancia desde el borde inferior */
+    left: 20px;     /* distancia desde el borde izquierdo */
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    z-index: 1000;  /* asegura que quede encima del contenido */
+}
+
+  <!-- Botón Cobrar + Total fijo abajo a la izquierda -->
+<div class="cobrar-fixed">
     <form action="/cobrar" method="POST" class="d-flex align-items-center">
-            <button type="submit" class="btn btn-success btn-lg">✔ Cobrar</button>
-            <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
-        </form>
-    </div>
+        <button type="submit" class="btn btn-success btn-lg">✔ Cobrar</button>
+        <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
+    </form>
+</div>
+
+
 </div>
 
 
