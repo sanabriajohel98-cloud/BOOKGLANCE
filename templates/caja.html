@@ -6,7 +6,7 @@
 <a href="/tickets" class="btn btn-info">🧾 Ver Tickets</a>
 <a href="/limpiar" class="btn btn-warning">🗑️ Limpiar</a>
 
-<!-- Nombre del cliente + botón cobrar en el mismo formulario -->
+<!-- Nombre del cliente + botón cobrar -->
 <form action="/cobrar" method="POST" class="mb-3">
     <div class="mb-2">
         <input type="text" name="cliente" class="form-control" placeholder="👤 Nombre del cliente" value="">
@@ -31,14 +31,14 @@
             <tbody>
             {% for p in caja %}
                 <tr>
-                    <td>{{ p.nombre }}</td>
+                    <td>{{ p.producto.nombre }}</td>
                     <td>
-                        <form action="/actualizar_cantidad/{{ loop.index0 }}" method="POST" style="display:inline;">
+                        <form action="/actualizar_cantidad/{{ p.id }}" method="POST" style="display:inline;">
                             <input type="number" name="cantidad" value="{{ p.cantidad }}" min="1" style="width: 50px;" onchange="this.form.submit()">
                         </form>
                     </td>
-                    <td>Gs. {{ "{:,}".format(p.precio|int) }}</td>
-                    <td><a href="/quitar/{{ loop.index0 }}" class="btn btn-danger btn-sm">✕</a></td>
+                    <td>Gs. {{ "{:,}".format(p.precio_total|int) }}</td>
+                    <td><a href="/quitar/{{ p.id }}" class="btn btn-danger btn-sm">✕</a></td>
                 </tr>
             {% endfor %}
             </tbody>

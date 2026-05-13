@@ -42,6 +42,13 @@ class Producto(db.Model):
     precio = db.Column(db.Float)
     stock = db.Column(db.Integer)
     imagen = db.Column(db.String(200))
+    
+class CajaItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"))
+    cantidad = db.Column(db.Integer, default=1)
+    precio_total = db.Column(db.Float)
+    usuario = db.Column(db.String(100))  # opcional, para saber quién abrió la caja
 
 # 📊 VENTAS
 class Venta(db.Model):
@@ -224,17 +231,27 @@ def buscar():
     return render_template("caja.html", caja=session.get("caja", []), total=sum(p["precio"] for p in session.get("caja", [])), productos=productos)
 
 # 🛒 CAJA
-@app.route("/caja")
-def caja():
+@app.route("/actualizar_cantidad/<int:id>", methods=["POST"])
+def actualizar_cantidad(id):
     if session.get("role") != "admin":
         return redirect("/")
 
-    caja = session.get("caja", [])
-    total = sum(p["precio"] for p in caja)
+    cantidad = int(request.form.get("cantidad", 1))
+    item = CajaItem.query.get(id)
 
-    productos = Producto.query.all()
+    if item:
+        if cantidad > 0:
+            item.cantidad = cantidad
+            producto = Producto.query.get(item.producto_id)
+            item.precio_total = producto.precio * cantidad
+        else:
+            db.session.delete(item)
 
-    return render_template("caja.html", caja=caja, total=total, productos=productos)
+        db.session.commit()
+
+    return redirect("/caja")
+
+
 
 # ➕ AGREGAR A CAJA
 @app.route("/agregar/<int:id>")
@@ -298,46 +315,52 @@ def quitar(index):
 # 🗑️ LIMPIAR CAJA
 @app.route("/limpiar")
 def limpiar():
-    session["caja"] = []
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    CajaItem.query.filter_by(usuario=session.get("user","admin")).delete()
+    db.session.commit()
+
     return redirect("/caja")
+
 
 # 💰 COBRAR
 @app.route("/cobrar", methods=["GET", "POST"])
 def cobrar():
-    caja = session.get("caja", [])
-    total = sum(p["precio"] for p in caja)
-    
-    if request.method == "POST":
-        cliente = request.form.get("cliente", "")
-    else:
-        cliente = ""
+    if session.get("role") != "admin":
+        return redirect("/")
 
-    for item in caja:
-        # Registrar venta
-        v = Venta(producto=item["nombre"], total=item["precio"], cantidad=item.get("cantidad", 1), cliente=cliente)
-        db.session.add(v)
-        
-        # Descontar stock
-        producto = Producto.query.filter_by(nombre=item["nombre"]).first()
-        if producto and producto.stock > 0:
-            producto.stock -= 1
+    items = CajaItem.query.filter_by(usuario=session.get("user","admin")).all()
+    total = sum(i.precio_total for i in items)
 
-    # Guardar ticket en la base de datos
+    cliente = request.form.get("cliente", "") if request.method == "POST" else ""
+
+    for item in items:
+        producto = Producto.query.get(item.producto_id)
+        if producto:
+            # Registrar venta
+            v = Venta(producto=producto.nombre, total=item.precio_total, cantidad=item.cantidad, cliente=cliente)
+            db.session.add(v)
+
+            # Descontar stock
+            if producto.stock >= item.cantidad:
+                producto.stock -= item.cantidad
+
+    # Guardar ticket
     ticket = Ticket(
         fecha=datetime.now(),
-        items=json.dumps(caja),
+        items=json.dumps([{"producto": Producto.query.get(i.producto_id).nombre, "cantidad": i.cantidad, "precio": i.precio_total} for i in items]),
         total=total,
         cliente=cliente
     )
     db.session.add(ticket)
+
+    # Vaciar caja
+    CajaItem.query.filter_by(usuario=session.get("user","admin")).delete()
     db.session.commit()
 
-    session["ticket"] = caja
-    session["ticket_total"] = total
-    session["ticket_cliente"] = cliente
-    session["caja"] = []
-
     return redirect("/ticket")
+
 
 # 🧾 VER ÚLTIMO TICKET
 @app.route("/ticket")
