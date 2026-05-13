@@ -12,7 +12,7 @@
         <input type="text" name="cliente" class="form-control" placeholder="👤 Nombre del cliente" value="">
     </div>
     <button type="submit" class="btn btn-success btn-lg">✔ Cobrar</button>
-    <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
+   
 </form>
 
 <div class="row">
@@ -79,5 +79,5 @@
         {% endif %}
     </div>
 </div>
-
+ <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
 {% endblock %}
