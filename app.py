@@ -217,6 +217,19 @@ def tienda():
     productos = Producto.query.all()
     return render_template("tienda.html", productos=productos)
 
+@app.route("/caja")
+def caja_view():
+    if session.get("role") != "admin":
+        return redirect("/")
+    
+    # Traer los ítems de la base
+    caja = CajaItem.query.filter_by(usuario=session.get("user","admin")).all()
+    total = sum(i.precio_total for i in caja)
+    productos = Producto.query.all()
+    
+    return render_template("caja.html", caja=caja, total=total, productos=productos)
+
+
 # 🔍 BUSCAR PRODUCTOS (para caja)
 @app.route("/buscar")
 def buscar():
@@ -228,7 +241,10 @@ def buscar():
         ).all()
     else:
         productos = Producto.query.all()
-    return render_template("caja.html", caja=session.get("caja", []), total=sum(p["precio"] for p in session.get("caja", [])), productos=productos)
+
+    caja = CajaItem.query.filter_by(usuario=session.get("user","admin")).all()
+    total = sum(i.precio_total for i in caja)
+    return render_template("caja.html", caja=caja, total=total, productos=productos)
 
 # 🛒 CAJA
 @app.route("/actualizar_cantidad/<int:id>", methods=["POST"])
@@ -256,31 +272,31 @@ def actualizar_cantidad(id):
 # ➕ AGREGAR A CAJA
 @app.route("/agregar/<int:id>")
 def agregar(id):
-    p = Producto.query.get(id)
+    if session.get("role") != "admin":
+        return redirect("/")
 
-    caja = session.get("caja", [])
-    
-    # Buscar si el producto ya existe
-    encontrado = False
-    for item in caja:
-        if item["nombre"] == p.nombre:
-            item["cantidad"] = item.get("cantidad", 1) + 1
-            item["precio"] = float(p.precio) * item["cantidad"]
-            encontrado = True
-            break
-    
-    if not encontrado:
-        caja.append({
-            "nombre": p.nombre,
-            "precio": float(p.precio),
-            "cantidad": 1,
-            "precio_unitario": float(p.precio)
-        })
+    producto = Producto.query.get(id)
+    if not producto:
+        return redirect("/caja")
 
-    session["caja"] = caja
-    session.modified = True
+    usuario = session.get("user","admin")
+    item = CajaItem.query.filter_by(producto_id=producto.id, usuario=usuario).first()
 
+    if item:
+        item.cantidad += 1
+        item.precio_total = producto.precio * item.cantidad
+    else:
+        item = CajaItem(
+            producto_id=producto.id,
+            cantidad=1,
+            precio_total=producto.precio,
+            usuario=usuario
+        )
+        db.session.add(item)
+
+    db.session.commit()
     return redirect("/caja")
+
 
 # ✏️ ACTUALIZAR CANTIDAD
 @app.route("/actualizar_cantidad/<int:index>", methods=["POST"])
@@ -301,16 +317,18 @@ def actualizar_cantidad(index):
     return redirect("/caja")
 
 # ❌ QUITAR DE CAJA
-@app.route("/quitar/<int:index>")
-def quitar(index):
-    caja = session.get("caja", [])
-    
-    if 0 <= index < len(caja):
-        caja.pop(index)
-        session["caja"] = caja
-        session.modified = True
-    
+@app.route("/quitar/<int:id>")
+def quitar(id):
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    item = CajaItem.query.get(id)
+    if item:
+        db.session.delete(item)
+        db.session.commit()
+
     return redirect("/caja")
+
 
 # 🗑️ LIMPIAR CAJA
 @app.route("/limpiar")
