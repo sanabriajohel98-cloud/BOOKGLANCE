@@ -2,10 +2,13 @@
     position: fixed;
     bottom: 20px;   /* distancia desde el borde inferior */
     left: 20px;     /* distancia desde el borde izquierdo */
-    background: #bf2121;
+    background: #fff;
     padding: 10px 15px;
     border: 1px solid #ccc;
     border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     z-index: 1000;  /* asegura que quede encima del contenido */
 }
+
+
 
