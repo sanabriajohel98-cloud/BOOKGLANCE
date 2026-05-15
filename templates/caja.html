@@ -12,7 +12,13 @@
         <input type="text" name="cliente" class="form-control" placeholder="👤 Nombre del cliente" value="">
     </div>
     
-   
+    <!-- Botón Cobrar + Total fijo abajo a la izquierda -->
+     <div class="cobrar-fixed">
+      <form action="/cobrar" method="POST" class="d-flex align-items-center">
+         <button type="submit" class="btn btn-success btn-lg">✔ Cobrar</button>
+        <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
+        </form>
+    </div>
 </form>
 
 <div class="row">
@@ -43,13 +49,7 @@
             {% endfor %}
             </tbody>
         </table>
-      <!-- Botón Cobrar + Total fijo abajo a la izquierda -->
-     <div class="cobrar-fixed">
-      <form action="/cobrar" method="POST" class="d-flex align-items-center">
-         <button type="submit" class="btn btn-success btn-lg">✔ Cobrar</button>
-        <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
-        </form>
-    </div>
+     
     </div>
     
     <!-- Productos disponibles -->
