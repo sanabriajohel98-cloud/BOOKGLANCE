@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, url_for
 from flask_migrate import Migrate
 import flask_migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -76,51 +76,44 @@ def debug():
         return f"❌ Error: {str(e)}"
 
    # createDB.py
+from app import app, db
+from flask_migrate import upgrade
+
+with app.app_context():
+    upgrade()
+    print("✅ Migraciones aplicadas correctamente, productos e imágenes conservados.")
 
 
 # 🔐 LOGIN
+# Ruta principal (home)
 @app.route("/", methods=["GET", "POST"])
-def login ():
+def home():
+    # Podés decidir qué mostrar en la raíz:
+    # O redirigir al login:
+    return redirect(url_for("login"))
+    # O mostrar una página inicial:
+    # return render_template("index.html")
+
+# Ruta de login
+@app.route("/login", methods=["GET", "POST"])
+def login():
     if request.method == "POST":
-        user = request.form["user"]
-        password = request.form["pass"]
-
-        # ADMIN
-        if user == "admin" and password == "1234":
+        usuario = request.form["usuario"]
+        clave = request.form["clave"]
+        # lógica de autenticación
+        if usuario == "admin" and clave == "1234":
             session["role"] = "admin"
-            return redirect("/admin")
-
-        # CLIENTE
-        u = Usuario.query.filter_by(nombre=user, password=password).first()
-        if u:
-            session["role"] = "cliente"
-            session["user"] = user
-            return redirect("/tienda")
-
-        return "❌ Error login"
-
+            return redirect(url_for("admin"))
+        else:
+            return render_template("login.html", error="Credenciales inválidas")
     return render_template("login.html")
 
-# 📝 REGISTRO
-@app.route("/registro", methods=["GET", "POST"])
-def registro():
-    if request.method == "POST":
-        nombre = request.form["user"]
-        password = request.form["pass"]
-
-        nuevo = Usuario(nombre=nombre, password=password)
-        db.session.add(nuevo)
-        db.session.commit()
-
-        return redirect("/")
-
-    return render_template("registro.html")
-
-# ⚙️ ADMIN
-@app.route("/admin", methods=["GET", "POST"])
+# Ruta de administración
+@app.route("/admin")
 def admin():
     if session.get("role") != "admin":
-        return redirect("/")
+        return redirect(url_for("login"))
+        return render_template("admin.html")
 
     if request.method == "POST":
         codigo = request.form.get("codigo", "")
