@@ -1,0 +1,10 @@
+.cobrar-fixed {
+    position: fixed;
+    bottom: 20px;   /* distancia desde el borde inferior */
+    left: 20px;     /* distancia desde el borde izquierdo */
+    background: #fff;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    z-index: 1000;  /* asegura que quede encima del contenido */
+}
