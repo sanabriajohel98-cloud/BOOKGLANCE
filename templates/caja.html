@@ -12,7 +12,6 @@
         <input type="text" name="cliente" class="form-control" placeholder="👤 Nombre del cliente" value="">
     </div>
     
-    <button type="submit" class="btn btn-success cobrar-fixed">💳 Cobrar</button>
 </form>
 
 <div class="row">
@@ -92,7 +91,7 @@
     <div style="clear: both;"></div>
     <hr>
     {% if caja %}
-    <p style="text-align: center;">Fecha: {{ caja[0].fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+    <p style="text-align: center;">Fecha: {{ caja[1].fecha.strftime('%d/%m/%Y %H:%M') }}</p>
     {% endif %}
     
     {% for p in caja %}

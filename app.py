@@ -27,7 +27,6 @@ migrate = Migrate(app, db)
 @app.route('/static/images/<path:filename>')
 def serve_image(filename):
     return send_from_directory('static/images', filename)
-
 # 👤 USUARIOS
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -66,7 +65,6 @@ class Ticket(db.Model):
     items = db.Column(db.Text)  # JSON con los items
     total = db.Column(db.Float)
     cliente = db.Column(db.String(100))
-
 # 🔧 DIAGNÓSTICO
 @app.route("/debug")
 def debug():
