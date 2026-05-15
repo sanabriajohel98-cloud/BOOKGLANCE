@@ -71,18 +71,20 @@ class Ticket(db.Model):
 @app.route("/debug")
 def debug():
     try:
-        db.create_all()
-        return f"✅ DB OK. Tablas: {[t.__tablename__ for t in db.metadata.tables.values()]}"
+        # Solo mostrar las tablas, NO crear de nuevo
+        return f"✅ DB OK. Tablas: {[t for t in db.metadata.tables.keys()]}"
     except Exception as e:
         return f"❌ Error: {str(e)}"
 
    # createDB.py
 
+# createDB.py
 from app import app, db
+from flask_migrate import upgrade
 
 with app.app_context():
-    db.create_all()
-    print("✅ Base de datos creada correctamente sin borrar productos ni imágenes.")
+    upgrade()  # aplica las migraciones pendientes
+    print("✅ Migraciones aplicadas correctamente, productos e imágenes conservados.")
 
 
 # 🔐 LOGIN
