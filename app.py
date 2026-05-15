@@ -80,7 +80,7 @@ def debug():
 
 # 🔐 LOGIN
 @app.route("/", methods=["GET", "POST"])
-def home():
+def login ():
     if request.method == "POST":
         user = request.form["user"]
         password = request.form["pass"]
