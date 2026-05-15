@@ -78,16 +78,16 @@ def debug():
    # createDB.py
 
 # createDB.py
-#from app import app, db
-#from flask_migrate import upgrade
+from app import app, db
+from flask_migrate import upgrade
 
-#with app.app_context():
- #   upgrade()  # aplica las migraciones pendientes
-  #  print("✅ Migraciones aplicadas correctamente, productos e imágenes conservados.")
+with app.app_context():
+      upgrade()  # aplica las migraciones pendientes
+      print("✅ Migraciones aplicadas correctamente, productos e imágenes conservados.")
 
 # 🔐 LOGIN
 @app.route("/", methods=["GET", "POST"])
-def login():
+def home():
     if request.method == "POST":
         user = request.form["user"]
         password = request.form["pass"]
