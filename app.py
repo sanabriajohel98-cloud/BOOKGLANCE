@@ -139,17 +139,15 @@ def admin():
 
 
         # Manejo seguro de la imagen
-        nombre_imagen = None
-        if "imagen" in request.files and request.files["imagen"].filename:
+        nombre_imagen = None  # por defecto no hay imagen
+        if "imagen" in request.files:
             imagen = request.files["imagen"]
-            # Definir carpeta de subida si no existe
-            if not app.config.get("UPLOAD_FOLDER"):
-                app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "images")
-            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+            if imagen and imagen.filename.strip():  # solo si realmente se subió algo
+                ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
+                imagen.save(ruta)
+        nombre_imagen = imagen.filename
+            # si no hay imagen, no se hace nada
 
-            ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
-            imagen.save(ruta)
-            nombre_imagen = imagen.filename
 
         # Crear producto
         p = Producto(
@@ -185,15 +183,14 @@ def editar(id):
             return "❌ Error: precio o stock inválido"
 
         # Imagen opcional: si no se sube nueva, se mantiene la anterior
-        if "imagen" in request.files and request.files["imagen"].filename:
+        if "imagen" in request.files:
             imagen = request.files["imagen"]
-            if not app.config.get("UPLOAD_FOLDER"):
-                app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "static/images")
-            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+            if imagen and imagen.filename.strip():
+             ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
+        imagen.save(ruta)
+        producto.imagen = imagen.filename
+# si no hay imagen, no se toca producto.imagen
 
-            ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
-            imagen.save(ruta)
-            producto.imagen = imagen.filename
 
         db.session.commit()
         return redirect("/admin")
