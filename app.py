@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, send_from_directory
 from flask_migrate import Migrate
+import flask_migrate
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
@@ -77,13 +78,12 @@ def debug():
    # createDB.py
 
 # createDB.py
-from app import app, db
-from flask_migrate import upgrade
+#from app import app, db
+#from flask_migrate import upgrade
 
-with app.app_context():
-    flask_migrate.upgrade()  # aplica las migraciones pendientes
-    print("✅ Migraciones aplicadas correctamente, productos e imágenes conservados.")
-
+#with app.app_context():
+ #   upgrade()  # aplica las migraciones pendientes
+  #  print("✅ Migraciones aplicadas correctamente, productos e imágenes conservados.")
 
 # 🔐 LOGIN
 @app.route("/", methods=["GET", "POST"])
@@ -244,8 +244,8 @@ def buscar():
     return render_template("caja.html", caja=caja, total=total, productos=productos)
 
 # 🛒 CAJA
-@app.route("/actualizar_cantidad/<int:id>", methods=["POST"])
-def actualizar_cantidad(id):
+@app.route("/actualizar_cantidad/<int:index>", methods=["POST"], endpoint="actualizar_cantidad_post")
+def actualizar_cantidad_post(index):
     if session.get("role") != "admin":
         return redirect("/")
 
