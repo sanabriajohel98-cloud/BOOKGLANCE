@@ -139,12 +139,12 @@ def admin():
 
 
         # Manejo seguro de la imagen
-        nombre_imagen = ""
+        nombre_imagen = None
         if "imagen" in request.files and request.files["imagen"].filename:
             imagen = request.files["imagen"]
             # Definir carpeta de subida si no existe
             if not app.config.get("UPLOAD_FOLDER"):
-                app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "static/images")
+                app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "images")
             os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
             ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
