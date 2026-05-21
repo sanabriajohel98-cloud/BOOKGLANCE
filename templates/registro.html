@@ -12,11 +12,15 @@
 
 <h3>📝Registro Bookglance</h3>
 
-<form method="POST">
-    <input class="form-control mb-2" name="user" placeholder="Usuario">
-    <input class="form-control mb-3" name="pass" type="password" placeholder="Contraseña">
+<form method="POST" action="{{ url_for('registro') }}">
+    <input class="form-control mb-2" name="usuario" placeholder="Usuario" required>
+    <input class="form-control mb-3" name="clave" type="password" placeholder="Contraseña" required>
     <button class="btn btn-primary w-100">Crear cuenta</button>
 </form>
+
+{% if error %}
+    <div class="alert alert-danger text-center mt-3">{{ error }}</div>
+{% endif %}
 
 </div>
 
