@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, url_for
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 from flask_migrate import Migrate
-import flask_migrate
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
@@ -21,6 +20,11 @@ else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookglace.db"
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# 📁 Configurar carpeta de uploads
+app.config["UPLOAD_FOLDER"] = "static/images"
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -28,6 +32,7 @@ migrate = Migrate(app, db)
 @app.route('/static/images/<path:filename>')
 def serve_image(filename):
     return send_from_directory('static/images', filename)
+
 # 👤 USUARIOS
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -66,6 +71,7 @@ class Ticket(db.Model):
     items = db.Column(db.Text)  # JSON con los items
     total = db.Column(db.Float)
     cliente = db.Column(db.String(100))
+
 # 🔧 DIAGNÓSTICO
 @app.route("/debug")
 def debug():
@@ -74,15 +80,6 @@ def debug():
         return f"✅ DB OK. Tablas: {[t for t in db.metadata.tables.keys()]}"
     except Exception as e:
         return f"❌ Error: {str(e)}"
-
-   # createDB.py
-from app import app, db
-from flask_migrate import upgrade
-
-with app.app_context():
-    upgrade()
-    print("✅ Migraciones aplicadas correctamente, productos e imágenes conservados.")
-
 
 # 🔐 LOGIN
 # Ruta principal (home)
@@ -113,39 +110,41 @@ def login():
 def admin():
     if session.get("role") != "admin":
         return redirect(url_for("login"))
-        return render_template("admin.html")
-
-    if request.method == "POST":
-        codigo = request.form.get("codigo", "")
-        nombre = request.form["nombre"]
-        precio = float(request.form.get("precio", 0))
-        stock = int(request.form.get("stock", 0))
-
-
-        # Manejo seguro de la imagen
-        nombre_imagen = None  # por defecto no hay imagen
-        if "imagen" in request.files:
-            imagen = request.files["imagen"]
-            if imagen and imagen.filename.strip():  # solo si realmente se subió algo
-                ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
-                imagen.save(ruta)
-        nombre_imagen = imagen.filename
-            # si no hay imagen, no se hace nada
-
-
-        # Crear producto
-        p = Producto(
-            codigo=codigo,
-            nombre=nombre,
-            precio=float(precio),
-            stock=int(stock),
-            imagen=nombre_imagen)
-
-        db.session.add(p)
-        db.session.commit()
-
+    
     productos = Producto.query.all()
     return render_template("admin.html", productos=productos)
+
+@app.route("/admin", methods=["POST"])
+def admin_post():
+    if session.get("role") != "admin":
+        return redirect(url_for("login"))
+
+    codigo = request.form.get("codigo", "")
+    nombre = request.form["nombre"]
+    precio = float(request.form.get("precio", 0))
+    stock = int(request.form.get("stock", 0))
+
+    # Manejo seguro de la imagen
+    nombre_imagen = None  # por defecto no hay imagen
+    if "imagen" in request.files:
+        imagen = request.files["imagen"]
+        if imagen and imagen.filename.strip():  # solo si realmente se subió algo
+            ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
+            imagen.save(ruta)
+            nombre_imagen = imagen.filename
+
+    # Crear producto
+    p = Producto(
+        codigo=codigo,
+        nombre=nombre,
+        precio=float(precio),
+        stock=int(stock),
+        imagen=nombre_imagen)
+
+    db.session.add(p)
+    db.session.commit()
+    
+    return redirect(url_for("admin"))
 
 # ✏️ EDITAR PRODUCTO
 @app.route("/editar/<int:id>", methods=["GET", "POST"])
@@ -170,11 +169,9 @@ def editar(id):
         if "imagen" in request.files:
             imagen = request.files["imagen"]
             if imagen and imagen.filename.strip():
-             ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
-        imagen.save(ruta)
-        producto.imagen = imagen.filename
-# si no hay imagen, no se toca producto.imagen
-
+                ruta = os.path.join(app.config["UPLOAD_FOLDER"], imagen.filename)
+                imagen.save(ruta)
+                producto.imagen = imagen.filename
 
         db.session.commit()
         return redirect("/admin")
@@ -230,13 +227,13 @@ def buscar():
     return render_template("caja.html", caja=caja, total=total, productos=productos)
 
 # 🛒 CAJA
-@app.route("/actualizar_cantidad/<int:index>", methods=["POST"], endpoint="actualizar_cantidad_post")
-def actualizar_cantidad_post(index):
+@app.route("/actualizar_cantidad/<int:item_id>", methods=["POST"])
+def actualizar_cantidad_post(item_id):
     if session.get("role") != "admin":
         return redirect("/")
 
     cantidad = int(request.form.get("cantidad", 1))
-    item = CajaItem.query.get(id)
+    item = CajaItem.query.get(item_id)
 
     if item:
         if cantidad > 0:
@@ -249,8 +246,6 @@ def actualizar_cantidad_post(index):
         db.session.commit()
 
     return redirect("/caja")
-
-
 
 # ➕ AGREGAR A CAJA
 @app.route("/agregar/<int:id>")
@@ -278,25 +273,6 @@ def agregar(id):
         db.session.add(item)
 
     db.session.commit()
-    return redirect("/caja")
-
-
-# ✏️ ACTUALIZAR CANTIDAD
-@app.route("/actualizar_cantidad/<int:index>", methods=["POST"])
-def actualizar_cantidad(index):
-    cantidad = int(request.form.get("cantidad", 1))
-    caja = session.get("caja", [])
-    
-    if 0 <= index < len(caja):
-        if cantidad > 0:
-            caja[index]["cantidad"] = cantidad
-            caja[index]["precio"] = caja[index].get("precio_unitario", caja[index]["precio"] / caja[index].get("cantidad", 1)) * cantidad
-        else:
-            caja.pop(index)
-    
-    session["caja"] = caja
-    session.modified = True
-    
     return redirect("/caja")
 
 # ❌ QUITAR DE CAJA
@@ -480,10 +456,9 @@ def logout():
     session.clear()
     return redirect("/")
 
-    # =========================
+# =========================
 # 🚀 RUN
 # =========================
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-
