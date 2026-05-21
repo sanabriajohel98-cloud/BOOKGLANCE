@@ -75,6 +75,9 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if session.get('role'):
+        return redirect(url_for('admin') if session.get('role') == 'admin' else url_for('tienda'))
+
     if request.method == 'POST':
         usuario = request.form.get('usuario')
         clave = request.form.get('clave')

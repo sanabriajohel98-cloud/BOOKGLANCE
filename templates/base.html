@@ -8,6 +8,7 @@
 
 <body>
 
+{% if session.get('role') %}
 <!-- 🧭 NAVBAR GLOBAL -->
 <nav class="navbar navbar-dark bg-dark px-3">
     <span class="navbar-brand">📚 BookGlance</span>
@@ -20,6 +21,7 @@
         <a class="btn btn-danger btn-sm" href="{{ url_for('logout') }}">🚪 Salir</a>
     </div>
 </nav>
+{% endif %}
 
 <div class="container mt-4">
     {% block content %}{% endblock %}
