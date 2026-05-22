@@ -3,8 +3,8 @@
 {% block content %}
 
 <h2>💰 Caja POS</h2>
-<a href="/tickets" class="btn btn-info">🧾 Ver Tickets</a>
-<a href="/limpiar" class="btn btn-warning">🗑️ Limpiar</a>
+<a href="{{ url_for('tickets') }}" class="btn btn-info">🧾 Ver Tickets</a>
+<a href="{{ url_for('limpiar') }}" class="btn btn-warning">🗑️ Limpiar</a>
 
 <!-- Nombre del cliente + botón cobrar -->
 <form> 
@@ -27,31 +27,40 @@
                     <th>Acción</th>
                 </tr>
             </thead>
-            <tbody>
-            {% for p in caja %}
-                <tr>
-                    <td>{{ p.producto.nombre }}</td>
-                    <td>
-                        <form action="/actualizar_cantidad/{{ p.id }}" method="POST" style="display:inline;">
-                            <input type="number" name="cantidad" value="{{ p.cantidad }}" min="1" style="width: 50px;" onchange="this.form.submit()">
-                        </form>
+             <tbody>
+             {% for p in caja %}
+                 <tr>
+                   <td>{{ p.producto.nombre }}</td>
+                  <td>
+                        {% if session.get('role') == 'admin' %}
+                              <form action="{{ url_for('actualizar_cantidad_item', id=p.id) }}" method="POST" style="display:inline;">
+                                <input type="number" name="cantidad" value="{{ p.cantidad }}" min="1" style="width: 50px;" onchange="this.form.submit()">
+                             </form>
+                          {% else %}
+                              {{ p.cantidad }}
+                      {% endif %}
                     </td>
-                    <td>Gs. {{ "{:,}".format(p.precio_total|int) }}</td>
-                    <td><a href="/quitar/{{ p.id }}" class="btn btn-danger btn-sm">✕</a></td>
-                </tr>
-            {% endfor %}
+                     <td>Gs. {{ "{:,}".format(p.precio_total|int) }}</td>
+                     <td>
+                         {% if session.get('role') == 'admin' %}
+                              <a href="{{ url_for('quitar', id=p.id) }}" class="btn btn-danger btn-sm">✕</a>
+                      {% endif %}
+                     </td>
+                  </tr>
+                {% endfor %}
             </tbody>
+
         </table>
      
     </div>
     
     <!-- Productos disponibles -->
     <div class="col-md-6">
-        <form action="/buscar" method="GET" class="mb-3">
+        <form action="{{ url_for('buscar') }}" method="GET" class="mb-3">
             <div class="input-group">
                 <input type="text" name="q" class="form-control" placeholder="🔍 Buscar..." value="{{ request.args.get('q', '') }}">
                 <button type="submit" class="btn btn-primary">Buscar</button>
-                <a href="/caja" class="btn btn-secondary">Ver todos</a>
+                <a href="{{ url_for('caja') }}" class="btn btn-secondary">Ver todos</a>
             </div>
         </form>
         
@@ -68,7 +77,7 @@
                     <h6>{{ p.nombre }}</h6>
                     <p>Gs. {{ "{:,}".format(p.precio|int) }}</p>
                     {% if p.stock > 0 %}
-                        <a href="/agregar/{{ p.id }}" class="btn btn-primary btn-sm">+</a>
+                        <a href="{{ url_for('agregar', id=p.id) }}" class="btn btn-primary btn-sm">+</a>
                     {% else %}
                         <span class="badge bg-secondary">Sin stock</span>
                     {% endif %}
@@ -89,7 +98,7 @@
     </div>
 <!-- Botón Cobrar + Total fijo abajo a la izquierda -->
  <div class="cobrar-fixed">
-    <form action="/cobrar" method="POST" class="d-flex align-items-center">
+    <form action="{{ url_for('cobrar') }}" method="POST" class="d-flex align-items-center">
         <button type="submit" class="btn btn-success btn-lg">✔ Cobrar</button>
         <span class="ms-3">Total: Gs. {{ "{:,}".format(total|int) }}</span>
     </form>
@@ -97,9 +106,11 @@
 
     <div style="clear: both;"></div>
     <hr>
-    {% if caja %}
-    <p style="text-align: center;">Fecha: {{ caja[1].fecha.strftime('%d/%m/%Y %H:%M') }}</p>
-    {% endif %}
+  {% if caja %}
+  <p style="text-align: center;">Fecha: {{ fecha }}</p>
+{% endif %}
+
+
     
     {% for p in caja %}
     <p>{{ p.producto.nombre }} - Cantidad: {{ p.cantidad }} -Precio: Gs. {{ "{:,}".format(p.precio_total|int) }}</p>

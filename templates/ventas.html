@@ -41,9 +41,13 @@
                         <td>{{ v.cantidad }}</td>
                         <td>Gs. {{ v.total }}</td>
                         <td>
-                            <a href="/editar_venta/{{ v.id }}" class="btn btn-warning btn-sm">✏️</a>
-                            <a href="/eliminar_venta/{{ v.id }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar venta?')">🗑️</a>
+                        
+                         {% if session.get('role') == 'admin' %}
+                            <a href="{{ url_for('editar_venta', id=v.id) }}" class="btn btn-warning btn-sm">✏️</a>
+                            <a href="{{ url_for('eliminar_venta', id=v.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar venta?')">🗑️</a>
+                         {% endif %}
                         </td>
+
                     </tr>
                 {% endfor %}
                 </tbody>

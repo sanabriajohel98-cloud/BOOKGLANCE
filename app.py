@@ -229,8 +229,12 @@ def caja():
     caja_items = CajaItem.query.filter_by(usuario=usuario_actual).all()
     total = sum(i.precio_total or 0 for i in caja_items)
     productos = Producto.query.all()
-    
-    return render_template('caja.html', caja=caja_items, total=total, productos=productos)
+
+    # Obtener fecha actual para mostrar en la vista
+    fecha = datetime.now().strftime('%d/%m/%Y %H:%M')
+
+    return render_template('caja.html', caja=caja_items, total=total, productos=productos, fecha=fecha)
+
 
 @app.route('/buscar')
 def buscar():
