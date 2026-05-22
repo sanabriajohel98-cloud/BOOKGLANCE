@@ -255,7 +255,9 @@ def buscar():
     return render_template('caja.html', caja=caja_items, total=total, productos=productos)
 
 @app.route('/actualizar_cantidad/<int:id>', methods=['POST'])
-def actualizar_cantidad(id):
+def actualizar_cantidad_item(id):
+    ...
+
     check = validar_sesion_admin()
     if check:
         return check
