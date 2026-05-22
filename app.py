@@ -256,8 +256,6 @@ def buscar():
 
 @app.route('/actualizar_cantidad/<int:id>', methods=['POST'])
 def actualizar_cantidad_item(id):
-    ...
-
     check = validar_sesion_admin()
     if check:
         return check
@@ -280,6 +278,7 @@ def actualizar_cantidad_item(id):
             db.session.commit()
     
     return redirect(url_for('caja'))
+
 
 @app.route('/agregar/<int:id>')
 def agregar(id):
