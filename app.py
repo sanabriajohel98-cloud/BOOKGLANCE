@@ -33,19 +33,34 @@ class Usuario(db.Model):
     password = db.Column(db.String(100), nullable=False)
 
 class Producto(db.Model):
+    __tablename__ = 'producto'
     id = db.Column(db.Integer, primary_key=True)
-    codigo = db.Column(db.String(50))
+    codigo = db.Column(db.String(50), unique=True, nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
     precio = db.Column(db.Float, nullable=False)
     stock = db.Column(db.Integer, default=0)
-    imagen = db.Column(db.String(200))
+    imagen = db.Column(db.String(200))  # nombre del archivo de imagen
+
+    # Relación con CajaItem
+    items_caja = db.relationship('CajaItem', backref='producto', lazy=True)
+
+    # Relación con Venta
+    ventas = db.relationship('Venta', backref='producto', lazy=True)
 
 class CajaItem(db.Model):
+    __tablename__ = 'cajaitem'
     id = db.Column(db.Integer, primary_key=True)
+
+    # Relación con Producto
     producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=False)
+    producto = db.relationship("Producto", backref="items_caja")
+
     cantidad = db.Column(db.Integer, default=1)
-    precio_total = db.Column(db.Float)
+    precio_total = db.Column(db.Float, nullable=False)
+
+    # Usuario que está usando la caja (opcional)
     usuario = db.Column(db.String(100), nullable=False)
+
 
 class Venta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -56,12 +71,13 @@ class Venta(db.Model):
     cliente = db.Column(db.String(100))
 
 class Ticket(db.Model):
+    __tablename__ = 'ticket'
     id = db.Column(db.Integer, primary_key=True)
     fecha = db.Column(db.DateTime, default=datetime.now)
-    items = db.Column(db.Text, nullable=False)
-    total = db.Column(db.Float, nullable=False)
-    cliente = db.Column(db.String(100))
+    cliente = db.Column(db.String(100), nullable=False)
 
+    # Relación con Ventas
+    ventas = db.relationship('Venta', backref='ticket', lazy=True)
 # Funciones de validación
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
