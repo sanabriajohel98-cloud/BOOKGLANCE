@@ -4,67 +4,75 @@ from flask_migrate import Migrate
 from datetime import datetime
 import json
 import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "bookglace_pro")
+app.secret_key = os.environ.get("SECRET_KEY", "bookglance_pro_secure_key_2024")
 app.config["UPLOAD_FOLDER"] = "static/images"
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+# Configuración de base de datos
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookglace.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookglance.db"
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+# Modelos de Base de Datos
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
+    nombre = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
 
 class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo = db.Column(db.String(50))
-    nombre = db.Column(db.String(100))
-    precio = db.Column(db.Float)
-    stock = db.Column(db.Integer)
+    nombre = db.Column(db.String(100), nullable=False)
+    precio = db.Column(db.Float, nullable=False)
+    stock = db.Column(db.Integer, default=0)
     imagen = db.Column(db.String(200))
 
 class CajaItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"))
+    producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=False)
     cantidad = db.Column(db.Integer, default=1)
     precio_total = db.Column(db.Float)
-    usuario = db.Column(db.String(100))
+    usuario = db.Column(db.String(100), nullable=False)
 
 class Venta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fecha = db.Column(db.DateTime, default=datetime.now)
-    producto = db.Column(db.String(100))
+    producto = db.Column(db.String(100), nullable=False)
     cantidad = db.Column(db.Integer, default=1)
-    total = db.Column(db.Float)
+    total = db.Column(db.Float, nullable=False)
     cliente = db.Column(db.String(100))
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fecha = db.Column(db.DateTime, default=datetime.now)
-    items = db.Column(db.Text)
-    total = db.Column(db.Float)
+    items = db.Column(db.Text, nullable=False)
+    total = db.Column(db.Float, nullable=False)
     cliente = db.Column(db.String(100))
 
-# 🔐 FUNCIÓN DE VALIDACIÓN CENTRALIZADA
+# Funciones de validación
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 def validar_sesion_admin():
     """Valida que el usuario esté autenticado como admin"""
     if session.get("role") != "admin":
         return redirect(url_for("login"))
     return None
 
+# Rutas públicas
 @app.route('/static/images/<path:filename>')
 def serve_image(filename):
     return send_from_directory('static/images', filename)
@@ -92,7 +100,7 @@ def login():
         if not usuario or not clave:
             return render_template('login.html', error='Usuario y contraseña requeridos')
         
-        if usuario == 'admin' and clave == '1234':
+        if usuario == 'Johel' and clave == 'Johel123':
             session['role'] = 'admin'
             session['user'] = usuario
             return redirect(url_for('admin'))
@@ -126,6 +134,7 @@ def registro():
     
     return render_template('registro.html')
 
+# Rutas de Administración
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     check = validar_sesion_admin()
@@ -150,8 +159,9 @@ def admin():
         imagen = request.files.get('imagen')
         imagen_filename = None
         
-        if imagen and imagen.filename:
-            imagen_filename = imagen.filename
+        if imagen and imagen.filename and allowed_file(imagen.filename):
+            filename = secure_filename(imagen.filename)
+            imagen_filename = filename
             imagen.save(os.path.join(app.config['UPLOAD_FOLDER'], imagen_filename))
         
         nuevo = Producto(
@@ -191,10 +201,11 @@ def editar(id):
             return render_template('editar.html', producto=producto, error='Precio o stock inválidos')
         
         imagen = request.files.get('imagen')
-        if imagen and imagen.filename and imagen.filename.strip():
-            ruta = os.path.join(app.config['UPLOAD_FOLDER'], imagen.filename)
+        if imagen and imagen.filename and imagen.filename.strip() and allowed_file(imagen.filename):
+            filename = secure_filename(imagen.filename)
+            ruta = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             imagen.save(ruta)
-            producto.imagen = imagen.filename
+            producto.imagen = filename
         
         db.session.commit()
         return redirect(url_for('admin'))
@@ -214,6 +225,7 @@ def eliminar(id):
     
     return redirect(url_for('admin'))
 
+# Rutas de Tienda
 @app.route('/tienda')
 def tienda():
     productos = Producto.query.all()
@@ -229,12 +241,9 @@ def caja():
     caja_items = CajaItem.query.filter_by(usuario=usuario_actual).all()
     total = sum(i.precio_total or 0 for i in caja_items)
     productos = Producto.query.all()
-
-    # Obtener fecha actual para mostrar en la vista
     fecha = datetime.now().strftime('%d/%m/%Y %H:%M')
 
     return render_template('caja.html', caja=caja_items, total=total, productos=productos, fecha=fecha)
-
 
 @app.route('/buscar')
 def buscar():
@@ -282,7 +291,6 @@ def actualizar_cantidad_item(id):
             db.session.commit()
     
     return redirect(url_for('caja'))
-
 
 @app.route('/agregar/<int:id>')
 def agregar(id):
@@ -352,7 +360,6 @@ def cobrar():
                 if producto.stock >= item.cantidad:
                     producto.stock -= item.cantidad
         
-        # Guardar ticket con items correctos
         items_json = []
         for i in items:
             producto = Producto.query.get(i.producto_id)
@@ -503,6 +510,3 @@ def eliminar_venta(id):
 def logout():
     session.clear()
     return redirect(url_for('login'))
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
