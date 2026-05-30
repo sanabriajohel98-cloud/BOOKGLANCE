@@ -1,7 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <div class="container mt-4">
+        <style>
+         @media print {
+            /* Oculta la barra superior y los botones */
+             nav, .navbar, .menu, .btn, .top-buttons {
+                  display: none !important;
+            }
+
+          /* Asegura que solo el ticket se vea */
+        .ticket {
+            visibility: visible;
+             position: absolute;
+             left: 0;
+             top: 0;
+             width: 100%;
+             border: none;
+         }
+
+         body {
+              background: white;
+             margin: 0;
+             padding: 0;
+         }
+    }
+    </style>
+
     <div class="ticket p-4 border" style="max-width: 500px; margin: 0 auto; font-family: monospace;">
         <div style="text-align: center; border-bottom: 2px dashed #333; padding-bottom: 10px;">
             <h4>📚 BOOKGLANCE</h4>
