@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="ticket p-4 border" style="max-width: 500px; margin: 0 auto; font-family: monospace;">
+        <div style="text-align: center; border-bottom: 2px dashed #333; padding-bottom: 10px;">
+            <h4>📚 BOOKGLANCE</h4>
+            <p>Sistema de Caja</p>
+        </div>
+        
+        {% if items %}
+            <p style="text-align: center; margin-top: 15px;">
+                <strong>Fecha:</strong> {{ fecha }}
+            </p>
+            {% if cliente %}
+                <p style="text-align: center;">
+                    <strong>Cliente:</strong> {{ cliente }}
+                </p>
+            {% endif %}
+            
+            <hr>
+            
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <th style="text-align: left; padding: 5px;">Producto</th>
+                    <th style="text-align: center; padding: 5px;">Cant</th>
+                    <th style="text-align: right; padding: 5px;">Precio</th>
+                </tr>
+                {% for item in items %}
+                <tr>
+                    <td style="padding: 5px;">{{ item.producto }}</td>
+                    <td style="text-align: center; padding: 5px;">{{ item.cantidad }}</td>
+                    <td style="text-align: right; padding: 5px;">Gs. {{ "{:,}".format(item.precio|int) }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            
+            <hr>
+            <p style="text-align: right; font-size: 18px;">
+                <strong>TOTAL: Gs. {{ "{:,}".format(total|int) }}</strong>
+            </p>
+            
+            <div style="text-align: center; margin-top: 20px; border-top: 2px dashed #333; padding-top: 10px;">
+                <p>¡Gracias por su compra!</p>
+                <p style="font-size: 12px;">Vuelva pronto</p>
+            </div>
+        {% else %}
+            <p style="text-align: center; color: #999;">Sin movimientos</p>
+        {% endif %}
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('caja') }}" class="btn btn-primary">🔙 Volver a Caja</a>
+        <button onclick="window.print()" class="btn btn-secondary">🖨️ Imprimir</button>
+    </div>
+</div>
+{% endblock %}

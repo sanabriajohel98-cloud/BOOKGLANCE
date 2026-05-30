@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>💳 Cobrar Venta</h2>
+    <a href="{{ url_for('caja') }}" class="btn btn-secondary mb-3">⬅ Volver</a>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h4>🧾 Resumen de Venta</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cant</th>
+                        <th>Precio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.producto.nombre }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>Gs. {{ "{:,}".format(item.precio_total|int) }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+            <h5>Total: Gs. {{ "{:,}".format(total|int) }}</h5>
+        </div>
+        
+        <div class="col-md-6">
+            <h4>👤 Información del Cliente</h4>
+            <form method="POST" class="card p-3">
+                <div class="mb-3">
+                    <label class="form-label">Nombre del Cliente (opcional):</label>
+                    <input class="form-control" name="cliente" placeholder="Ej: Juan Pérez" value="{{ cliente }}">
+                </div>
+                <button type="submit" class="btn btn-success btn-lg w-100">✔️ Confirmar Cobro</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
