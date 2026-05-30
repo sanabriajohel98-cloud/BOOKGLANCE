@@ -1,65 +1,41 @@
-<nav class="navbar navbar-dark bg-dark px-3">
-    <span class="navbar-brand">📚 BOOKGLANCE</span>
+{% extends "base.html" %}
 
-    <div>
-        <a href="/admin">📦 Productos</a>
-        <a href="/caja">💰 Caja</a>
-        <a href="/ventas">📊 Ventas</a>
-        <a href="/ticket">🧾 Ticket</a>
-        <a href="/logout">🚪 Salir</a>
-    </div>
-</nav>
-<nav>
-  <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Tienda</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-
-<body>
-
-<nav class="navbar navbar-dark bg-primary px-3">
-    <span class="navbar-brand">🛒 Tienda Online</span>
-
-    <div>
-        <a href="/carrito" class="btn btn-light btn-sm">Carrito</a>
-        <a href="/logout" class="btn btn-danger btn-sm">Salir</a>
-    </div>
-</nav>
-
+{% block content %}
 <div class="container mt-4">
-
-<div class="row">
-
-{% for p in productos %}
-<div class="col-md-3">
-
-<div class="card shadow-sm mb-3">
-
-<img src="{{ url_for('static', filename='images/' + p.imagen) }}" class="img-fluid">
-
-<div class="p-2">
-<h6>{{p.nombre}}</h6>
-<p class="text-success">Gs. {{p.precio}}</p>
-
-<a href="/agregar/{{p.id}}" class="btn btn-primary w-100">
-🛒 Comprar
-</a>
-
+    <h2>🛒 Tienda Online</h2>
+    <a href="{{ url_for('caja') }}" class="btn btn-primary mb-3">🛍️ Ir a la Caja</a>
+    <hr>
+    <div class="row">
+    {% if productos %}
+        {% for p in productos %}
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                {% if p.imagen %}
+                    <img src="{{ url_for('static', filename='images/' + p.imagen) }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ p.nombre }}">
+                {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <span class="text-muted">📚 Sin imagen</span>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title">{{ p.nombre }}</h6>
+                    <p class="text-muted small">Código: {{ p.codigo }}</p>
+                    <p class="text-success fw-bold">Gs. {{ "{:,}".format(p.precio|int) }}</p>
+                    <p class="text-secondary">Stock: {{ p.stock }}</p>
+                    {% if p.stock > 0 %}
+                        <a href="{{ url_for('agregar', id=p.id) }}" class="btn btn-primary btn-sm w-100">🛒 Comprar</a>
+                    {% else %}
+                        <button class="btn btn-secondary btn-sm w-100" disabled>Sin stock</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <p class="text-center text-muted">No hay productos disponibles</p>
+        </div>
+    {% endif %}
+    </div>
 </div>
-
-</div>
-
-</div>
-{% endfor %}
-
-</div>
-
-</div>
-<a href="/">⬅ Volver</a>
-<a href="/admin">⬅ adm</a>
-</body>
-</html>
+{% endblock %}
