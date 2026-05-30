@@ -100,7 +100,7 @@ def login():
         if not usuario or not clave:
             return render_template('login.html', error='Usuario y contraseña requeridos')
         
-        if usuario == 'admin' and clave == '1234':
+        if usuario == 'Johel' and clave == 'Johel123':
             session['role'] = 'admin'
             session['user'] = usuario
             return redirect(url_for('admin'))
