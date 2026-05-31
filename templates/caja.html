@@ -5,7 +5,6 @@
 <h2>💰 Caja POS</h2>
 <a href="{{ url_for('tickets') }}" class="btn btn-info">🧾 Ver Tickets</a>
 <a href="{{ url_for('limpiar') }}" class="btn btn-warning">🗑️ Limpiar</a>
-<a href="{{ url_for('cobrar') }}" class="btn btn-success">💳 Cobrar</a>
 
 <div class="row mt-3">
     <!-- Caja actual -->
@@ -84,6 +83,7 @@
         {% else %}
         <p class="text-muted">No hay productos disponibles</p>
         {% endif %}
+        <a href="{{ url_for('cobrar') }}" class="btn btn-success">💳 Cobrar</a>
     </div>
 </div>
 
