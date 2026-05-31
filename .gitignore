@@ -4,5 +4,13 @@ __pycache__/
 instance/
 .venv/
 venv/
-*.db
 .env
+.DS_Store
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.log
+.pytest_cache/
+migrations/versions/
