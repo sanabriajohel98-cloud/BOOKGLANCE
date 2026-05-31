@@ -5,6 +5,10 @@ from datetime import datetime
 import json
 import os
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "bookglance_pro_secure_key_2024")
@@ -15,18 +19,25 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 # Configuración de base de datos
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
+    # Heroku usa postgres://, pero SQLAlchemy 1.4+ requiere postgresql://
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 else:
+    # SQLite para desarrollo local
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookglance.db"
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Modelos de Base de Datos
+# ==================== MODELOS DE BASE DE DATOS ====================
+
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), unique=True, nullable=False)
@@ -35,11 +46,12 @@ class Usuario(db.Model):
 class Producto(db.Model):
     __tablename__ = 'producto'
     id = db.Column(db.Integer, primary_key=True)
-    codigo = db.Column(db.String(50), unique=True, nullable=False)
+    codigo = db.Column(db.String(50), unique=True)
     nombre = db.Column(db.String(100), nullable=False)
     precio = db.Column(db.Float, nullable=False)
     stock = db.Column(db.Integer, default=0)
     imagen = db.Column(db.String(200))
+    creado = db.Column(db.DateTime, default=datetime.now)
 
 class CajaItem(db.Model):
     __tablename__ = 'cajaitem'
@@ -66,7 +78,8 @@ class Ticket(db.Model):
     total = db.Column(db.Float, nullable=False)
     cliente = db.Column(db.String(100))
 
-# Funciones de validación
+# ==================== FUNCIONES DE VALIDACIÓN ====================
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -76,7 +89,20 @@ def validar_sesion_admin():
         return redirect(url_for("login"))
     return None
 
-# Rutas públicas
+def init_db():
+    """Inicializa la base de datos y carga datos de ejemplo"""
+    with app.app_context():
+        db.create_all()
+        
+        # Verificar si ya existen productos
+        if Producto.query.first() is None:
+            # Datos de ejemplo (vacío, el admin los agregará)
+            print("✅ Base de datos inicializada. Agrega productos desde el admin.")
+        else:
+            print("✅ Base de datos ya contiene datos.")
+
+# ==================== RUTAS PÚBLICAS ====================
+
 @app.route('/static/images/<path:filename>')
 def serve_image(filename):
     return send_from_directory('static/images', filename)
@@ -140,7 +166,8 @@ def registro():
     
     return render_template('registro.html')
 
-# Rutas de Administración
+# ==================== RUTAS DE ADMINISTRACIÓN ====================
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     check = validar_sesion_admin()
@@ -171,7 +198,9 @@ def admin():
         
         if imagen and imagen.filename and allowed_file(imagen.filename):
             filename = secure_filename(imagen.filename)
-            imagen_filename = filename
+            # Agregar timestamp para evitar duplicados
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+            imagen_filename = timestamp + filename
             imagen.save(os.path.join(app.config['UPLOAD_FOLDER'], imagen_filename))
         
         nuevo = Producto(
@@ -213,6 +242,8 @@ def editar(id):
         imagen = request.files.get('imagen')
         if imagen and imagen.filename and imagen.filename.strip() and allowed_file(imagen.filename):
             filename = secure_filename(imagen.filename)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+            filename = timestamp + filename
             ruta = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             imagen.save(ruta)
             producto.imagen = filename
@@ -235,7 +266,8 @@ def eliminar(id):
     
     return redirect(url_for('admin'))
 
-# Rutas de Tienda
+# ==================== RUTAS DE TIENDA ====================
+
 @app.route('/tienda')
 def tienda():
     productos = Producto.query.all()
@@ -525,4 +557,5 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    init_db()
+    app.run(host='0.0.0.0', port=5000, debug=False)
