@@ -39,28 +39,16 @@ class Producto(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     precio = db.Column(db.Float, nullable=False)
     stock = db.Column(db.Integer, default=0)
-    imagen = db.Column(db.String(200))  # nombre del archivo de imagen
-
-    # Relación con CajaItem
-    items_caja = db.relationship('CajaItem', backref='producto', lazy=True)
-
-    # Relación con Venta
-    ventas = db.relationship('Venta', backref='producto', lazy=True)
+    imagen = db.Column(db.String(200))
 
 class CajaItem(db.Model):
     __tablename__ = 'cajaitem'
     id = db.Column(db.Integer, primary_key=True)
-
-    # Relación con Producto
     producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=False)
-    producto = db.relationship("Producto", backref="items_caja")
-
+    producto = db.relationship("Producto")
     cantidad = db.Column(db.Integer, default=1)
     precio_total = db.Column(db.Float, nullable=False)
-
-    # Usuario que está usando la caja (opcional)
     usuario = db.Column(db.String(100), nullable=False)
-
 
 class Venta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -74,10 +62,10 @@ class Ticket(db.Model):
     __tablename__ = 'ticket'
     id = db.Column(db.Integer, primary_key=True)
     fecha = db.Column(db.DateTime, default=datetime.now)
-    cliente = db.Column(db.String(100), nullable=False)
+    items = db.Column(db.Text, nullable=False)
+    total = db.Column(db.Float, nullable=False)
+    cliente = db.Column(db.String(100))
 
-    # Relación con Ventas
-    ventas = db.relationship('Venta', backref='ticket', lazy=True)
 # Funciones de validación
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -116,16 +104,13 @@ def login():
         if not usuario or not clave:
             return render_template('login.html', error='Usuario y contraseña requeridos')
         
+        # Admin predeterminado
         if usuario == 'Johel' and clave == 'Johel123':
             session['role'] = 'admin'
             session['user'] = usuario
             return redirect(url_for('admin'))
         
-        if usuario == 'Nawel' and clave == 'Nawel123':
-            session['role'] = 'admin'
-            session['user'] = usuario
-            return redirect(url_for('admin'))
-        
+        # Usuarios registrados
         usuario_db = Usuario.query.filter_by(nombre=usuario, password=clave).first()
         if usuario_db:
             session['role'] = 'user'
@@ -176,6 +161,10 @@ def admin():
             stock = int(stock_str)
         except ValueError:
             return render_template('admin.html', error='Precio o stock inválidos', productos=Producto.query.all())
+        
+        # Verificar código único
+        if codigo and Producto.query.filter_by(codigo=codigo).first():
+            return render_template('admin.html', error='El código ya existe', productos=Producto.query.all())
         
         imagen = request.files.get('imagen')
         imagen_filename = None
@@ -373,6 +362,9 @@ def cobrar():
     cliente = request.form.get('cliente', '') if request.method == 'POST' else ''
     
     if request.method == 'POST':
+        if not items:
+            return render_template('cobrar.html', items=items, total=total, cliente=cliente, error='No hay items en la caja')
+        
         for item in items:
             producto = Producto.query.get(item.producto_id)
             if producto:
