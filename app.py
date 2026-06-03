@@ -16,6 +16,15 @@ app.config["UPLOAD_FOLDER"] = "static/images"
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+# ==================== ADMINS PREDETERMINADOS ====================
+# FÁCIL: Agrega aquí más admins sin modificar el código
+ADMIN_USERS = {
+    'Johel': 'Johel123',
+    'Nawel': 'Nawe123',
+    # Agregar más admins aquí:
+    # 'usuario': 'contraseña',
+}
+
 # Configuración de base de datos
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
@@ -102,7 +111,6 @@ def init_db():
         
         # Verificar si ya existen productos
         if Producto.query.first() is None:
-            # Datos de ejemplo (vacío, el admin los agregará)
             print("✅ Base de datos inicializada. Agrega productos desde el admin.")
         else:
             print("✅ Base de datos ya contiene datos.")
@@ -136,13 +144,8 @@ def login():
         if not usuario or not clave:
             return render_template('login.html', error='Usuario y contraseña requeridos')
         
-        # Admin predeterminado
-        if usuario == 'Johel' and clave == 'Johel123':
-            session['role'] = 'admin'
-            session['user'] = usuario
-            return redirect(url_for('admin'))
-        
-        if usuario == 'Nawel' and clave == 'Nawe123':
+        # Verificar si es admin predeterminado
+        if usuario in ADMIN_USERS and ADMIN_USERS[usuario] == clave:
             session['role'] = 'admin'
             session['user'] = usuario
             return redirect(url_for('admin'))
@@ -169,6 +172,10 @@ def registro():
         
         if Usuario.query.filter_by(nombre=usuario).first():
             return render_template('registro.html', error='El usuario ya existe.')
+        
+        # Evitar que registren nombres de admins
+        if usuario in ADMIN_USERS:
+            return render_template('registro.html', error='Este usuario está reservado.')
         
         nuevo = Usuario(nombre=usuario, password=clave)
         db.session.add(nuevo)
@@ -200,7 +207,6 @@ def admin():
         except ValueError:
             return render_template('admin.html', error='Precio o stock inválidos', productos=Producto.query.all())
         
-        # Verificar código único
         if codigo and Producto.query.filter_by(codigo=codigo).first():
             return render_template('admin.html', error='El código ya existe', productos=Producto.query.all())
         
@@ -209,7 +215,6 @@ def admin():
         
         if imagen and imagen.filename and allowed_file(imagen.filename):
             filename = secure_filename(imagen.filename)
-            # Agregar timestamp para evitar duplicados
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
             imagen_filename = timestamp + filename
             imagen.save(os.path.join(app.config['UPLOAD_FOLDER'], imagen_filename))
