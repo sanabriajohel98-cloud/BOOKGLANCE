@@ -587,5 +587,7 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    init_db()
+    # Solo crear tablas si no existen (para desarrollo local)
+    if not os.environ.get("RENDER"):
+        init_db()
     app.run(host='0.0.0.0', port=5000, debug=False)
