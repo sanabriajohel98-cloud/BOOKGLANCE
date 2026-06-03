@@ -111,9 +111,17 @@ def init_db():
         
         # Verificar si ya existen productos
         if Producto.query.first() is None:
-            print("✅ Base de datos inicializada. Agrega productos desde el admin.")
+            productos_demo = [
+                Producto(codigo="P001", nombre="Lapicera Azul", precio=5000, stock=100),
+                Producto(codigo="P002", nombre="Cuaderno A4", precio=15000, stock=50),
+                Producto(codigo="P003", nombre="Regla 30cm", precio=3000, stock=200),
+            ]
+            db.session.bulk_save_objects(productos_demo)
+            db.session.commit()
+            print("✅ Base de datos inicializada con productos de prueba.")
         else:
             print("✅ Base de datos ya contiene datos.")
+
 
 # ==================== RUTAS PÚBLICAS ====================
 
