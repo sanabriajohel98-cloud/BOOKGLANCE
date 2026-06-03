@@ -61,12 +61,14 @@ class Producto(db.Model):
     stock = db.Column(db.Integer, default=0)
     imagen = db.Column(db.String(200))
     creado = db.Column(db.DateTime, default=datetime.now)
+    # Relación inversa con CajaItem
+    caja_items = db.relationship("CajaItem", back_populates="producto", cascade="all, delete-orphan")
 
 class CajaItem(db.Model):
     __tablename__ = 'cajaitem'
     id = db.Column(db.Integer, primary_key=True)
     producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=False)
-    producto = db.relationship("Producto")
+    producto = db.relationship("Producto", back_populates="caja_items")
     cantidad = db.Column(db.Integer, default=1)
     precio_total = db.Column(db.Float, nullable=False)
     usuario = db.Column(db.String(100), nullable=False)
