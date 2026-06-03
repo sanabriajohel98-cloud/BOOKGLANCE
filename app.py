@@ -135,7 +135,12 @@ def login():
             session['role'] = 'admin'
             session['user'] = usuario
             return redirect(url_for('admin'))
-        
+            
+          if usuario == 'Nawel' and clave == 'Nawe123':
+            session['role'] = 'admin'
+            session['user'] = usuario
+            return redirect(url_for('admin'))
+              
         # Usuarios registrados
         usuario_db = Usuario.query.filter_by(nombre=usuario, password=clave).first()
         if usuario_db:
