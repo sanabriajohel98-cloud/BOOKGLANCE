@@ -83,6 +83,12 @@ class Ticket(db.Model):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def validar_sesion_usuario():
+    """Valida que el usuario esté autenticado (admin o user)"""
+    if not session.get("role"):
+        return redirect(url_for("login"))
+    return None
+
 def validar_sesion_admin():
     """Valida que el usuario esté autenticado como admin"""
     if session.get("role") != "admin":
@@ -135,12 +141,12 @@ def login():
             session['role'] = 'admin'
             session['user'] = usuario
             return redirect(url_for('admin'))
-            
-          if usuario == 'Nawel' and clave == 'Nawe123':
+        
+        if usuario == 'Nawel' and clave == 'Nawe123':
             session['role'] = 'admin'
             session['user'] = usuario
             return redirect(url_for('admin'))
-              
+        
         # Usuarios registrados
         usuario_db = Usuario.query.filter_by(nombre=usuario, password=clave).first()
         if usuario_db:
@@ -275,12 +281,16 @@ def eliminar(id):
 
 @app.route('/tienda')
 def tienda():
+    check = validar_sesion_usuario()
+    if check:
+        return check
+    
     productos = Producto.query.all()
     return render_template('tienda.html', productos=productos)
 
 @app.route('/caja')
 def caja():
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -294,7 +304,7 @@ def caja():
 
 @app.route('/buscar')
 def buscar():
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -316,7 +326,7 @@ def buscar():
 
 @app.route('/actualizar_cantidad/<int:id>', methods=['POST'])
 def actualizar_cantidad_item(id):
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -341,7 +351,7 @@ def actualizar_cantidad_item(id):
 
 @app.route('/agregar/<int:id>')
 def agregar(id):
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -364,7 +374,7 @@ def agregar(id):
 
 @app.route('/quitar/<int:id>')
 def quitar(id):
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -377,7 +387,7 @@ def quitar(id):
 
 @app.route('/limpiar')
 def limpiar():
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -389,7 +399,7 @@ def limpiar():
 
 @app.route('/cobrar', methods=['GET', 'POST'])
 def cobrar():
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -435,7 +445,7 @@ def cobrar():
 
 @app.route('/ticket')
 def ticket_ultima():
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -450,7 +460,7 @@ def ticket_ultima():
 
 @app.route('/tickets')
 def tickets():
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
@@ -459,7 +469,7 @@ def tickets():
 
 @app.route('/ticket/<int:id>')
 def ver_ticket(id):
-    check = validar_sesion_admin()
+    check = validar_sesion_usuario()
     if check:
         return check
     
