@@ -1,37 +1,75 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Bookglace PRO</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block content %}
 
-{% if session.get('role') %}
-<!-- 🧭 NAVBAR GLOBAL -->
-<nav class="navbar navbar-dark bg-dark px-3">
-    <span class="navbar-brand">📚 BookGlance</span>
+<h2>📦 Administración</h2>
+<a href="{{ url_for('tickets') }}" class="btn btn-info mb-3">📋 Ver Tickets</a>
 
-    <div>
-        {% if session.get('role') == 'admin' %}
-            <a class="btn btn-outline-light btn-sm" href="{{ url_for('admin') }}">📦 Productos</a>
-            <a class="btn btn-outline-warning btn-sm" href="{{ url_for('caja') }}">💰 Caja</a>
-            <a class="btn btn-outline-info btn-sm" href="{{ url_for('ventas') }}">📊 Ventas</a>
-            <a class="btn btn-outline-success btn-sm" href="{{ url_for('ticket_ultima') }}">🧾 Ticket</a>
-        {% elif session.get('role') == 'user' %}
-            <a class="btn btn-outline-warning btn-sm" href="{{ url_for('caja') }}">💰 Caja</a>
-            <a class="btn btn-outline-success btn-sm" href="{{ url_for('ticket_ultima') }}">🧾 Ticket</a>
-        {% endif %}
-        
-        <a class="btn btn-danger btn-sm" href="{{ url_for('logout') }}">🚪 Salir</a>
+<!-- Mensajes flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container mb-3">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
     </div>
-</nav>
-{% endif %}
+  {% endif %}
+{% endwith %}
 
-<div class="container mt-4">
-    {% block content %}{% endblock %}
+<form method="POST" enctype="multipart/form-data" class="row g-2">
+
+  <div class="col-md-2">
+    <input name="codigo" class="form-control" placeholder="Código">
+  </div>
+
+  <div class="col-md-3">
+    <input name="nombre" class="form-control" placeholder="Producto">
+  </div>
+
+  <div class="col-md-2">
+    <input name="precio" class="form-control" placeholder="Precio (Gs.)">
+  </div>
+
+  <div class="col-md-2">
+    <input name="stock" class="form-control" placeholder="Stock">
+  </div>
+
+  <div class="col-md-2">
+    <input type="file" name="imagen" class="form-control">
+  </div>
+
+  <div class="col-md-1">
+    <button class="btn btn-success">GUARDAR</button>
+  </div>
+
+</form>
+
+<hr>
+
+<div class="row">
+  {% for p in productos %}
+  <div class="col-md-3">
+    <div class="card p-2">
+      {% if p.imagen %}
+        <img src="{{ url_for('static', filename='images/' + p.imagen) }}" class="img-fluid">
+      {% else %}
+        <div class="text-muted text-center py-3">Sin imagen</div>
+      {% endif %}
+      <h6>{{ p.codigo }} - {{ p.nombre }}</h6>
+      <p>Gs. {{ p.precio }} | Stock: {{ p.stock }}</p>
+      
+      {% if session.get('role') == 'admin' %}
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('editar', id=p.id) }}" class="btn btn-warning btn-sm">✏️ Editar</a>
+        <a href="{{ url_for('eliminar', id=p.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar producto?')">🗑️</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
 </div>
 
-</body>
-</html>
+{% endblock %}

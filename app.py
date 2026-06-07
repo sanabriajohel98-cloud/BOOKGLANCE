@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask import flash
 from datetime import datetime
 import json
 import os
@@ -238,7 +239,9 @@ def admin():
         )
         db.session.add(nuevo)
         db.session.commit()
+        flash("Producto guardado correctamente", "success")
         return redirect(url_for('admin'))
+
     
     productos = Producto.query.all()
     return render_template('admin.html', productos=productos)
@@ -289,8 +292,8 @@ def eliminar(id):
     if p:
         db.session.delete(p)
         db.session.commit()
-    
-    return redirect(url_for('admin'))
+        flash("Producto eliminado", "danger")
+        return redirect(url_for('admin'))
 
 # ==================== RUTAS DE TIENDA ====================
 
