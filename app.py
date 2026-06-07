@@ -590,4 +590,4 @@ if __name__ == '__main__':
     # Solo crear tablas si estás en desarrollo local
     if not os.environ.get("RENDER"):
         init_db()
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
