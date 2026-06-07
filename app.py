@@ -146,13 +146,8 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('role'):
-        return redirect(url_for('admin') if session.get('role') == 'admin' else url_for('tienda'))
+        return render_template('login.html', mensaje=f"Ya tienes sesión activa como {session['role']}")
     
-    if session.get('role'):
-    # en vez de redirigir directo, podrías mostrar un mensaje o botón
-       return render_template('login.html', mensaje="Ya tienes sesión activa")
-
-
     if request.method == 'POST':
         usuario = request.form.get('usuario', '').strip()
         clave = request.form.get('clave', '').strip()
@@ -176,30 +171,6 @@ def login():
         return render_template('login.html', error='Credenciales inválidas')
     
     return render_template('login.html')
-
-@app.route('/registro', methods=['GET', 'POST'])
-def registro():
-    if request.method == 'POST':
-        usuario = request.form.get('usuario', '').strip()
-        clave = request.form.get('clave', '').strip()
-        
-        if not usuario or not clave:
-            return render_template('registro.html', error='Completa todos los campos.')
-        
-        if Usuario.query.filter_by(nombre=usuario).first():
-            return render_template('registro.html', error='El usuario ya existe.')
-        
-        # Evitar que registren nombres de admins
-        if usuario in ADMIN_USERS:
-            return render_template('registro.html', error='Este usuario está reservado.')
-        
-        nuevo = Usuario(nombre=usuario, password=clave)
-        db.session.add(nuevo)
-        db.session.commit()
-        return redirect(url_for('login'))
-    
-    return render_template('registro.html')
-
 # ==================== RUTAS DE ADMINISTRACIÓN ====================
 
 @app.route('/admin', methods=['GET', 'POST'])
