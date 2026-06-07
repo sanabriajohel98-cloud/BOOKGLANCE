@@ -170,6 +170,28 @@ def login():
         return render_template('login.html', error='Credenciales inválidas')
     
     return render_template('login.html')
+@app.route('/registro', methods=['GET', 'POST'])
+def registro():
+    if request.method == 'POST':
+        usuario = request.form.get('usuario', '').strip()
+        clave = request.form.get('clave', '').strip()
+        
+        if not usuario or not clave:
+            return render_template('registro.html', error='Completa todos los campos.')
+        
+        if Usuario.query.filter_by(nombre=usuario).first():
+            return render_template('registro.html', error='El usuario ya existe.')
+        
+        if usuario in ADMIN_USERS:
+            return render_template('registro.html', error='Este usuario está reservado.')
+        
+        nuevo = Usuario(nombre=usuario, password=clave)
+        db.session.add(nuevo)
+        db.session.commit()
+        return redirect(url_for('login'))
+    
+    return render_template('registro.html')
+
 # ==================== RUTAS DE ADMINISTRACIÓN ====================
 
 @app.route('/admin', methods=['GET', 'POST'])
