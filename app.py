@@ -145,8 +145,7 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if session.get('role'):
-        return render_template('login.html', mensaje=f"Ya tienes sesión activa como {session['role']}")
+    
     
     if request.method == 'POST':
         usuario = request.form.get('usuario', '').strip()
