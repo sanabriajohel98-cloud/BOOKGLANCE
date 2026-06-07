@@ -147,6 +147,10 @@ def home():
 def login():
     if session.get('role'):
         return redirect(url_for('admin') if session.get('role') == 'admin' else url_for('tienda'))
+    if session.get('role'):
+    # en vez de redirigir directo, podrías mostrar un mensaje o botón
+       return render_template('login.html', mensaje="Ya tienes sesión activa")
+
 
     if request.method == 'POST':
         usuario = request.form.get('usuario', '').strip()
