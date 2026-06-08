@@ -7,5 +7,3 @@ Flask-Login==0.6.2
 Werkzeug==3.0.0
 python-dotenv==1.0.0
 SQLAlchemy==2.0.23
-Flask-WTF==1.0.1
-WTForms==3.0.1
