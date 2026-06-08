@@ -1,69 +1,76 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<h2>📦 Administración</h2>
-<a href="{{ url_for('tickets') }}" class="btn btn-info mb-3">📋 Ver Tickets</a>
-
-<!-- Mensajes flash -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
-
-<!-- Formulario de carga de productos -->
-<form method="POST" enctype="multipart/form-data" class="row g-2">
-  <div class="col-md-2">
-    <input name="codigo" class="form-control" placeholder="Código">
+<div class="container">
+  <h2 class="text-center mb-4">📦 Administración de Productos</h2>
+  <div class="d-flex justify-content-between mb-3">
+    <a href="{{ url_for('tickets') }}" class="btn btn-info">📋 Ver Tickets</a>
+    <button class="btn btn-success" data-bs-toggle="collapse" data-bs-target="#formProducto">➕ Nuevo Producto</button>
   </div>
-  <div class="col-md-3">
-    <input name="nombre" class="form-control" placeholder="Producto">
-  </div>
-  <div class="col-md-2">
-    <input name="precio" class="form-control" placeholder="Precio (Gs.)">
-  </div>
-  <div class="col-md-2">
-    <input name="stock" class="form-control" placeholder="Stock">
-  </div>
-  <div class="col-md-2">
-    <input type="file" name="imagen" class="form-control">
-  </div>
-  <div class="col-md-1">
-    <button class="btn btn-success w-100">GUARDAR</button>
-  </div>
-</form>
 
-<hr>
+  <!-- Mensajes flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-<!-- Listado de productos -->
-<div class="row">
-  {% for p in productos %}
-  <div class="col-md-3 mb-3">
-    <div class="card h-100 p-2">
-      {% if p.imagen %}
-        <img src="{{ url_for('static', filename='images/' + p.imagen) }}" class="img-fluid">
-      {% else %}
-        <div class="text-muted text-center py-3">Sin imagen</div>
-      {% endif %}
-
-      <h6 class="mt-2">{{ p.codigo }} - {{ p.nombre }}</h6>
-      <p>Gs. {{ p.precio }} | Stock: {{ p.stock }}</p>
-
-      {% if session.get('role') == 'admin' %}
-      <div class="d-flex gap-2">
-        <a href="{{ url_for('editar', id=p.id) }}" class="btn btn-warning btn-sm">✏️ Editar</a>
-        <a href="{{ url_for('eliminar', id=p.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar producto?')">🗑️</a>
-      </div>
-      {% endif %}
+  <!-- Formulario de carga de productos (colapsable) -->
+  <div class="collapse mb-4" id="formProducto">
+    <div class="card card-body shadow-sm">
+      <form method="POST" enctype="multipart/form-data" class="row g-3">
+        <div class="col-md-2">
+          <input name="codigo" class="form-control" placeholder="Código">
+        </div>
+        <div class="col-md-3">
+          <input name="nombre" class="form-control" placeholder="Producto">
+        </div>
+        <div class="col-md-2">
+          <input name="precio" class="form-control" placeholder="Precio (Gs.)">
+        </div>
+        <div class="col-md-2">
+          <input name="stock" class="form-control" placeholder="Stock">
+        </div>
+        <div class="col-md-2">
+          <input type="file" name="imagen" class="form-control">
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-success w-100">Guardar</button>
+        </div>
+      </form>
     </div>
   </div>
-  {% endfor %}
-</div>
 
+  <!-- Listado de productos -->
+  <div class="row">
+    {% for p in productos %}
+    <div class="col-md-3 mb-4">
+      <div class="card h-100 shadow-sm">
+        {% if p.imagen %}
+          <img src="{{ url_for('static', filename='images/' + p.imagen) }}" class="card-img-top" style="height:180px; object-fit:cover;">
+        {% else %}
+          <div class="text-muted text-center py-5">Sin imagen</div>
+        {% endif %}
+
+        <div class="card-body">
+          <h6 class="card-title">{{ p.codigo }} - {{ p.nombre }}</h6>
+          <p class="card-text">Gs. {{ p.precio }} | Stock: {{ p.stock }}</p>
+        </div>
+
+        {% if session.get('role') == 'admin' %}
+        <div class="card-footer d-flex justify-content-between">
+          <a href="{{ url_for('editar', id=p.id) }}" class="btn btn-warning btn-sm">✏️ Editar</a>
+          <a href="{{ url_for('eliminar', id=p.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar producto?')">🗑️ Eliminar</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}

@@ -3,25 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>BookGlance PRO</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6F" crossorigin="anonymous"
-    >
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
       background: url("{{ url_for('static', filename='images/fondo.jpg') }}") no-repeat center center fixed;
       background-size: cover;
     }
     .navbar {
-      background-color: rgba(0,0,0,0.8); /* semi-transparente */
+      background-color: rgba(0,0,0,0.8);
     }
     .card {
-      background-color: rgba(255,255,255,0.9); /* tarjetas con fondo claro */
+      background-color: rgba(255,255,255,0.9);
     }
   </style>
 </head>
 <body>
 
-  <!-- 🧭 NAVBAR GLOBAL -->
+  <!-- 🧭 NAVBAR GLOBAL (solo visible para admin) -->
+  {% if session.get('role') == 'admin' %}
   <nav class="navbar navbar-dark px-3">
     <span class="navbar-brand">📚 BookGlance</span>
     <div>
@@ -32,6 +31,7 @@
       <a class="btn btn-danger btn-sm" href="{{ url_for('logout') }}">🚪 Salir</a>
     </div>
   </nav>
+  {% endif %}
 
   <div class="container mt-4">
     {% block content %}

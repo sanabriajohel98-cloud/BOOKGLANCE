@@ -1,31 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="card shadow-lg p-4" style="width: 380px; border-radius: 15px;">
+    <h3 class="text-center mb-3">📚 <strong>BookGlance PRO</strong></h3>
 
-    <div class="card p-4 shadow" style="width:350px;">
-        <h3 class="text-center">📚 BOOKGLANCE</h3>  
+    {% if error %}
+      <div class="alert alert-danger text-center">{{ error }}</div>
+    {% endif %}
+    {% if mensaje %}
+      <div class="alert alert-info text-center">{{ mensaje }}</div>
+    {% endif %}
 
-        {% if mensaje %}
-            <div class="alert alert-info text-center">
-                {{ mensaje }}
-            </div>
-        {% endif %}
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Usuario</label>
+        <input type="text" name="usuario" class="form-control" placeholder="Ingresa tu usuario">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <input type="password" name="clave" class="form-control" placeholder="Ingresa tu contraseña">
+      </div>
+      <button class="btn btn-dark w-100 py-2">Entrar</button>
+    </form>
 
-        {% if error %}
-            <div class="alert alert-danger text-center">
-                {{ error }}
-            </div>
-        {% endif %}
-
-        <form method="POST" action="{{ url_for('login') }}">
-            <input class="form-control mb-2" name="usuario" placeholder="Usuario" required>
-            <input class="form-control mb-3" name="clave" type="password" placeholder="Contraseña" required>
-            <button class="btn btn-dark w-100">Entrar</button>
-        </form>
-
-        <a href="{{ url_for('registro') }}" class="d-block text-center mt-2">Registrarse</a>
+    <div class="text-center mt-3">
+      <a href="{{ url_for('registro') }}" class="text-decoration-none">Registrarse</a>
     </div>
-
+  </div>
 </div>
 {% endblock %}
